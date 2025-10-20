@@ -1,0 +1,19 @@
+{
+  "name": "power-automation-workflow",
+  "version": "1.0.0",
+  "description": "Power automation drag and drop workflow app with boolean builder and advanced operator functions",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "workflow",
+    "automation",
+    "drag-drop",
+    "boolean-builder",
+    "operators"
+  ],
+  "author": "AA-Staffing AIA",
+  "license": "MIT"
+}

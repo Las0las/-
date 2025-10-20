@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    {
+      "id": "node_0",
+      "type": "trigger",
+      "x": 100,
+      "y": 100,
+      "width": 180,
+      "height": 80,
+      "inputs": [],
+      "outputs": ["start"],
+      "data": {
+        "label": "Start Workflow",
+        "variables": {
+          "userName": "John Doe",
+          "age": 25,
+          "balance": 1000
+        }
+      },
+      "color": "#4CAF50"
+    },
+    {
+      "id": "node_1",
+      "type": "condition",
+      "x": 350,
+      "y": 100,
+      "width": 180,
+      "height": 80,
+      "inputs": ["input"],
+      "outputs": ["true", "false"],
+      "data": {
+        "label": "Age Check",
+        "condition": "$age >= 18"
+      },
+      "color": "#FF9800"
+    },
+    {
+      "id": "node_2",
+      "type": "operator",
+      "x": 600,
+      "y": 50,
+      "width": 180,
+      "height": 80,
+      "inputs": ["A", "B"],
+      "outputs": ["result"],
+      "data": {
+        "label": "Calculate Bonus",
+        "category": "math",
+        "operator": "MULTIPLY",
+        "input_A": "$balance",
+        "input_B": "1.1",
+        "outputVariable": "newBalance"
+      },
+      "color": "#9C27B0"
+    },
+    {
+      "id": "node_3",
+      "type": "action",
+      "x": 850,
+      "y": 50,
+      "width": 180,
+      "height": 80,
+      "inputs": ["input"],
+      "outputs": ["output"],
+      "data": {
+        "label": "Log Approval",
+        "action": "log",
+        "message": "User approved! Balance updated."
+      },
+      "color": "#2196F3"
+    },
+    {
+      "id": "node_4",
+      "type": "action",
+      "x": 600,
+      "y": 200,
+      "width": 180,
+      "height": 80,
+      "inputs": ["input"],
+      "outputs": ["output"],
+      "data": {
+        "label": "Log Rejection",
+        "action": "log",
+        "message": "User rejected - under 18"
+      },
+      "color": "#2196F3"
+    }
+  ],
+  "connections": [
+    {
+      "from": {
+        "node": {"id": "node_0"},
+        "output": "start"
+      },
+      "to": {
+        "node": {"id": "node_1"},
+        "input": "input"
+      }
+    },
+    {
+      "from": {
+        "node": {"id": "node_1"},
+        "output": "true"
+      },
+      "to": {
+        "node": {"id": "node_2"},
+        "input": "A"
+      }
+    },
+    {
+      "from": {
+        "node": {"id": "node_2"},
+        "output": "result"
+      },
+      "to": {
+        "node": {"id": "node_3"},
+        "input": "input"
+      }
+    },
+    {
+      "from": {
+        "node": {"id": "node_1"},
+        "output": "false"
+      },
+      "to": {
+        "node": {"id": "node_4"},
+        "input": "input"
+      }
+    }
+  ]
+}
