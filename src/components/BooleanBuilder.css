@@ -1,0 +1,136 @@
+.boolean-builder {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.operator-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.operator-button {
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.operator-button:hover {
+  background: #3a3a3a;
+  border-color: #555;
+}
+
+.operator-button.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #fff;
+}
+
+.operands-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.operand-item {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.operand-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.operand-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #8b5cf6;
+  letter-spacing: 0.5px;
+}
+
+.remove-operand {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.remove-operand:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.condition-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.condition-inputs input,
+.condition-inputs select {
+  padding: 8px;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.condition-inputs select {
+  min-width: 100px;
+}
+
+.nested-operator {
+  padding: 8px;
+  background: #0a0a0a;
+  border-radius: 4px;
+  border: 1px dashed #333;
+}
+
+.add-operand-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border: 1px dashed #333;
+  border-radius: 6px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-button:hover {
+  background: #3a3a3a;
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
