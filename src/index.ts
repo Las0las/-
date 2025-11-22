@@ -636,6 +636,19 @@ class AberdeenMasterShell {
   }
 
   /**
+   * Sanitize user input to prevent injection attacks
+   */
+  private sanitizeInput(input: unknown): string {
+    if (typeof input !== 'string') {
+      return String(input || '');
+    }
+    // Remove potentially dangerous characters and limit length
+    return input
+      .replace(/[<>'"]/g, '')
+      .substring(0, 200);
+  }
+
+  /**
    * Simulate tool execution (would be replaced with actual implementations)
    */
   private async simulateToolExecution(
@@ -643,13 +656,15 @@ class AberdeenMasterShell {
     args: Record<string, unknown>
   ): Promise<unknown> {
     // This is a simulation - in production, each tool would call actual services
+    const sanitizedName = this.sanitizeInput(args.candidate_name);
+    
     const results: Record<string, unknown> = {
       "resume-parsing": { parsed_data: args, success: true },
       "skill-extraction": { skills: ["JavaScript", "React", "TypeScript"] },
       "match-score-calculation": { match_score: 0.87, confidence: 0.94 },
       "email-generation": {
         subject: "Exciting Opportunity - Senior Engineer Role",
-        body: `Hello ${args.candidate_name || "there"}...`,
+        body: `Hello ${sanitizedName || "there"}...`,
       },
       "workflow-automation": { actions_executed: 3, results: [] },
     };
