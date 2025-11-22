@@ -13,7 +13,7 @@ This repository contains a static HTML/CSS/JavaScript AI recruitment dashboard a
 
 ### HTML
 - Use semantic HTML5 elements
-- Maintain proper indentation (4 spaces)
+- Maintain consistent indentation (4 spaces)
 - Include appropriate ARIA attributes for accessibility
 - Keep the structure organized and logical
 
