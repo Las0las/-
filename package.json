@@ -1,0 +1,32 @@
+{
+  "name": "aberdeen-ai-ats-master-shell",
+  "version": "4.1.0",
+  "description": "Aberdeen AI-ATS Master Shell - Production-Grade Master Orchestration Layer integrating 20 AI Agents + 25+ Skills + 9 Wizards + 19 Modules",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts",
+    "test": "echo \"No tests specified yet\" && exit 0"
+  },
+  "keywords": [
+    "ai",
+    "ats",
+    "recruitment",
+    "staffing",
+    "anthropic",
+    "claude",
+    "ai-agents",
+    "orchestration"
+  ],
+  "author": "Aberdeen AI",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
