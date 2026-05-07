@@ -1,0 +1,7 @@
+{
+  "id": "policy-gate-runtime",
+  "version": "0.1.0",
+  "runtime": "node",
+  "entrypoint": "packages/policy-gate-runtime/src/index.ts",
+  "status": "draft"
+}

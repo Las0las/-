@@ -1,0 +1,3 @@
+topic: inference.completed
+retention: audit
+schema: ../schemas/inference-completed.schema.json

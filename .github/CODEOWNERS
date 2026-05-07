@@ -1,0 +1,3 @@
+* @platform-governance/runtime-maintainers
+/docs/governance/ @platform-governance/policy-owners
+/manifests/ @platform-governance/model-registry-owners

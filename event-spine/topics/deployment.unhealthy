@@ -1,0 +1,3 @@
+topic: deployment.unhealthy
+retention: audit
+schema: ../schemas/deployment-unhealthy.schema.json

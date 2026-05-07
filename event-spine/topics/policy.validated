@@ -1,0 +1,3 @@
+topic: policy.validated
+retention: audit
+schema: ../schemas/policy-validated.schema.json

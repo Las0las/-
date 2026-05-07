@@ -1,0 +1,7 @@
+{
+  "id": "production-cluster",
+  "version": "0.1.0",
+  "environment": "production",
+  "healthPolicy": "standard",
+  "status": "draft"
+}

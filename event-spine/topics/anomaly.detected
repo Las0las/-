@@ -1,0 +1,3 @@
+topic: anomaly.detected
+retention: audit
+schema: ../schemas/anomaly-detected.schema.json

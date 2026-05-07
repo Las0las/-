@@ -1,0 +1,3 @@
+topic: inference.failed
+retention: audit
+schema: ../schemas/inference-failed.schema.json

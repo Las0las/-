@@ -1,0 +1,3 @@
+topic: constitutional.violation
+retention: audit
+schema: ../schemas/constitutional-violation.schema.json

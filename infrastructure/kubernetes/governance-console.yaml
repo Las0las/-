@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: governance-console
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: governance-console
+  template:
+    metadata:
+      labels:
+        app: governance-console
+    spec:
+      containers:
+        - name: governance-console
+          image: institutional-ai-runtime/governance-console:latest
+          ports:
+            - containerPort: 8080
