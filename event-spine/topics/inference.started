@@ -1,0 +1,3 @@
+topic: inference.started
+retention: audit
+schema: ../schemas/inference-started.schema.json

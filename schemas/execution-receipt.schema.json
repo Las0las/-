@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://institutional-ai-runtime.local/schemas/execution-receipt.schema.json",
+  "title": "ExecutionReceipt",
+  "type": "object",
+  "required": [
+    "id",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "tenantId": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}

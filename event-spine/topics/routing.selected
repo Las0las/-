@@ -1,0 +1,3 @@
+topic: routing.selected
+retention: audit
+schema: ../schemas/routing-selected.schema.json

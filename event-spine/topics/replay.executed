@@ -1,0 +1,3 @@
+topic: replay.executed
+retention: audit
+schema: ../schemas/replay-executed.schema.json

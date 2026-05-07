@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-runtime
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inference-runtime
+  template:
+    metadata:
+      labels:
+        app: inference-runtime
+    spec:
+      containers:
+        - name: inference-runtime
+          image: institutional-ai-runtime/inference-runtime:latest
+          ports:
+            - containerPort: 8080

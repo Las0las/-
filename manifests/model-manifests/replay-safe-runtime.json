@@ -1,0 +1,12 @@
+{
+  "id": "replay-safe-runtime",
+  "version": "0.1.0",
+  "capabilities": [
+    "governed-inference"
+  ],
+  "runtimeGuarantees": [
+    "audit",
+    "replay-safe"
+  ],
+  "status": "draft"
+}

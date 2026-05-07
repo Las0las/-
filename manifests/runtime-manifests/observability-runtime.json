@@ -1,0 +1,7 @@
+{
+  "id": "observability-runtime",
+  "version": "0.1.0",
+  "runtime": "node",
+  "entrypoint": "packages/observability-runtime/src/index.ts",
+  "status": "draft"
+}

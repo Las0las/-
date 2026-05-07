@@ -1,0 +1,3 @@
+topic: policy.blocked
+retention: audit
+schema: ../schemas/policy-blocked.schema.json

@@ -1,0 +1,3 @@
+topic: fallback.executed
+retention: audit
+schema: ../schemas/fallback-executed.schema.json

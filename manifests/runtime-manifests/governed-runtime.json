@@ -1,0 +1,7 @@
+{
+  "id": "governed-runtime",
+  "version": "0.1.0",
+  "runtime": "node",
+  "entrypoint": "packages/governed-runtime/src/index.ts",
+  "status": "draft"
+}

@@ -1,0 +1,3 @@
+topic: receipt.finalized
+retention: audit
+schema: ../schemas/receipt-finalized.schema.json

@@ -1,0 +1,7 @@
+{
+  "id": "replay-cluster",
+  "version": "0.1.0",
+  "environment": "replay",
+  "healthPolicy": "standard",
+  "status": "draft"
+}
