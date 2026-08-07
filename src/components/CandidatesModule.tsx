@@ -7,6 +7,7 @@ import {
   ExternalLink, Clock, Building, DollarSign, Linkedin,
   CalendarDays, UserCheck, FileCheck, Shield, AlertTriangle
 } from 'lucide-react';
+import { FocusedObject } from '../lawrence/objects';
 
 // Types & Interfaces
 interface Candidate {
@@ -244,6 +245,8 @@ const TableRow = memo(({
   candidate,
   jobs,
   submissions,
+  selected,
+  onFocus,
   onView,
   onSubmit,
   onEdit,
@@ -254,6 +257,8 @@ const TableRow = memo(({
   candidate: Candidate;
   jobs: Job[];
   submissions: Submission[];
+  selected: boolean;
+  onFocus: () => void;
   onView: () => void;
   onSubmit: () => void;
   onEdit: () => void;
@@ -261,11 +266,21 @@ const TableRow = memo(({
   onRestore: () => void;
   onDelete: () => void;
 }) => (
-  <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors" style={{ height: ROW_HEIGHT }}>
+  // Tier 2 row → tier 3 on hover → tier 3 + authority edge when focused.
+  <tr
+    aria-selected={selected}
+    className={`border-b border-edge-subtle transition-colors ${
+      selected
+        ? 'bg-selected shadow-[inset_3px_0_0_0_var(--lw-authority)]'
+        : 'hover:bg-interactive'
+    }`}
+    style={{ height: ROW_HEIGHT }}
+  >
     <td className="p-4">
       <button
-        onClick={onView}
-        className="flex items-center space-x-3 hover:text-purple-400 transition-colors"
+        onClick={onFocus}
+        title="Focus in inspector"
+        className="flex items-center space-x-3 rounded-md transition-colors hover:text-authority focus:outline-none focus:ring-2 focus:ring-edge-focus"
       >
         <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
           {candidate.firstName[0]}{candidate.lastName[0]}
@@ -312,6 +327,13 @@ const TableRow = memo(({
     </td>
     <td className="p-4">
       <div className="flex items-center space-x-2">
+        <button
+          onClick={onView}
+          className="p-1 hover:bg-gray-700 rounded transition-colors"
+          title="Open full profile"
+        >
+          <Eye className="w-4 h-4 text-gray-400" />
+        </button>
         {candidate.linkedin && (
           <a
             href={candidate.linkedin}
@@ -371,7 +393,61 @@ const TableRow = memo(({
 ));
 
 // Main Component
-const CandidatesModule: React.FC = () => {
+/**
+ * Project a candidate into the shell's focus model. The inspector renders
+ * this; the composer attaches `contextItem` as a chip.
+ */
+const candidateFocus = (candidate: Candidate): FocusedObject => ({
+  id: candidate.id,
+  kind: 'person',
+  title: `${candidate.firstName} ${candidate.lastName}`,
+  subtitle: candidate.title,
+  qualifier: `Candidate · ${candidate.status}`,
+  facts: [
+    { label: 'Location', value: candidate.location },
+    { label: 'Experience', value: `${candidate.experience} yrs` },
+    { label: 'Rating', value: `${candidate.rating}/5` },
+    { label: 'Source', value: candidate.source },
+    ...(candidate.employmentType
+      ? [{ label: 'Employment', value: candidate.employmentType.toUpperCase() }]
+      : []),
+    ...(candidate.salary
+      ? [{
+          label: 'Comp range',
+          value: `$${candidate.salary.min.toLocaleString()}–$${candidate.salary.max.toLocaleString()}`,
+          consequence: true,
+        }]
+      : []),
+    ...(candidate.availabilityToStart
+      ? [{ label: 'Available', value: candidate.availabilityToStart, consequence: true }]
+      : []),
+  ],
+  evidence: [
+    ...(candidate.candidateSummary
+      ? [{ label: 'Summary', value: candidate.candidateSummary }]
+      : []),
+    { label: 'Skills', value: candidate.skills.join(', ') },
+    { label: 'Contact', value: `${candidate.email} · ${candidate.phone}` },
+    { label: 'Last updated', value: new Date(candidate.updatedAt).toLocaleString() },
+  ],
+  contextItem: {
+    id: candidate.id,
+    kind: 'person',
+    label: 'Candidate',
+    value: `${candidate.firstName} ${candidate.lastName}`,
+    qualifier: `Candidate · ${candidate.status}`,
+    removable: true,
+  },
+});
+
+interface CandidatesModuleProps {
+  /** FOCUS — hand the selected object to the workbench inspector. */
+  onFocus?: (object: FocusedObject | null) => void;
+  /** Id of the object currently in focus, for tier-3 selected treatment. */
+  focusedId?: string | null;
+}
+
+const CandidatesModule: React.FC<CandidatesModuleProps> = ({ onFocus, focusedId = null }) => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -638,14 +714,18 @@ const CandidatesModule: React.FC = () => {
 
   // Header Component
   const Header = () => (
-    <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-1">
-      <div className="bg-gray-900 p-6">
+    // ORIENT — page identity at workspace weight. No decorative banner: the
+    // header must not outweigh the work it introduces.
+    <div className="border-b border-edge-subtle bg-workspace">
+      <div className="px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-muted">
+              Workbench
+            </p>
+            <h1 className="mt-1 text-2xl font-bold text-ink-primary">
               {showArchived ? 'Archived Candidates' : 'Candidates'}
             </h1>
-            <p className="text-gray-400 mt-1">Manage and track all candidates</p>
           </div>
           <div className="flex items-center space-x-4">
             {error && (
@@ -691,7 +771,8 @@ const CandidatesModule: React.FC = () => {
     }, [localSearch, debouncedSearch]);
 
     return (
-      <div className="bg-gray-800 p-4 border-b border-gray-700">
+      // FIND — pinned to the top of the workspace so search never scrolls away.
+      <div className="sticky top-0 z-20 border-b border-edge-subtle bg-surface p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 flex-1">
             <div className="relative flex-1 max-w-md">
@@ -768,6 +849,11 @@ const CandidatesModule: React.FC = () => {
                 candidate={candidate}
                 jobs={jobs}
                 submissions={submissions}
+                selected={focusedId === candidate.id}
+                onFocus={() => {
+                  setSelectedCandidate(candidate);
+                  onFocus?.(candidateFocus(candidate));
+                }}
                 onView={() => {
                   setSelectedCandidate(candidate);
                   setSidebarContent('profile');
@@ -862,16 +948,19 @@ const CandidatesModule: React.FC = () => {
                   <h3 className="text-white font-medium capitalize">{status}</h3>
                   <span className="text-gray-400 text-sm">{columnCandidates.length}</span>
                 </div>
-                <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
+                <div className="space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto">
                   {columnCandidates.slice(0, 20).map((candidate) => (
                     <div
                       key={candidate.id}
                       onClick={() => {
                         setSelectedCandidate(candidate);
-                        setSidebarContent('profile');
-                        setSidebarOpen(true);
+                        onFocus?.(candidateFocus(candidate));
                       }}
-                      className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors"
+                      className={`rounded-lg p-4 cursor-pointer border transition-colors ${
+                        focusedId === candidate.id
+                          ? 'bg-selected border-authority'
+                          : 'bg-raised border-transparent hover:bg-interactive hover:border-edge'
+                      }`}
                     >
                       <div className="flex items-center space-x-3 mb-3">
                         <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold">
@@ -1714,10 +1803,10 @@ const CandidatesModule: React.FC = () => {
   // Main Render
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="flex h-full min-h-[24rem] items-center justify-center bg-workspace">
         <div className="flex items-center space-x-3">
-          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-          <span className="text-white text-lg">Loading candidates...</span>
+          <Loader2 className="w-8 h-8 text-authority animate-spin" />
+          <span className="text-ink-primary text-lg">Loading candidates...</span>
         </div>
       </div>
     );
@@ -1725,17 +1814,18 @@ const CandidatesModule: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-900 text-white">
+      {/* TIER 1 — this fills the workspace column; the shell owns scrolling. */}
+      <div className="flex min-h-full flex-col bg-workspace text-ink-primary">
         <Header />
         <Toolbar />
-        <div className="relative">
+        <div className="relative flex-1">
           {view === 'table' ? <TableView /> : <KanbanView />}
         </div>
         <Sidebar />
         <DeleteConfirmModal />
 
         {/* Stats Footer */}
-        <div className="bg-gray-800 border-t border-gray-700 p-4">
+        <div className="mt-auto border-t border-edge-subtle bg-surface p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
               <div>
