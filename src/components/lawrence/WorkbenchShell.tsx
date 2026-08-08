@@ -169,6 +169,10 @@ const WorkbenchShell: React.FC<WorkbenchShellProps> = ({ renderWorkspace }) => {
 
   const handleSubmit = useCallback((submission: ComposerSubmission) => {
     const spec = modeSpec(submission.mode);
+    // Plan mode against a focused object with a precomputed answer (e.g. a
+    // candidate's ranked job matches) resolves immediately — it's real,
+    // already-computed data, not a fabricated response.
+    const quickPlan = submission.mode === 'plan' ? focused?.quickPlan : undefined;
     setEntries((current) => [
       {
         id: `entry-${Date.now()}`,
@@ -180,14 +184,17 @@ const WorkbenchShell: React.FC<WorkbenchShellProps> = ({ renderWorkspace }) => {
         })),
         sources: submission.sources,
         createdAt: new Date().toISOString(),
-        // Consequential modes stop at AUTHORIZE. Everything else is queued —
-        // no model is wired up in this build, so nothing is answered here.
-        state: spec.consequential ? 'awaiting-authorization' : 'queued',
+        // Consequential modes stop at AUTHORIZE. Everything else without a
+        // precomputed answer is queued — no model is wired up in this build.
+        state: spec.consequential ? 'awaiting-authorization' : quickPlan ? 'executed' : 'queued',
+        receipt: quickPlan
+          ? [quickPlan.summary, ...quickPlan.steps].join(' ')
+          : undefined,
       },
       ...current,
     ]);
     setInspectorOpen(true);
-  }, []);
+  }, [focused]);
 
   const authorize = useCallback((entry: SessionEntry) => {
     setEntries((current) =>

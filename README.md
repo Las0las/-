@@ -23,6 +23,14 @@ A modern, feature-rich recruitment dashboard built with React, TypeScript, and T
 - Add cover letters and notes per submission
 - View submission history per candidate
 
+### Match Intelligence
+- Automated candidate-to-job scoring (skills, experience level, engagement
+  type, location, availability) with a plain-language reason for every score
+- Open requisitions ranked best-fit-first in the candidate inspector and the
+  Submit-to-Job picker, with a one-click "Use match" recommendation
+- Deterministic and explainable — every score ships with the evidence behind
+  it, so a recruiter can verify the call instead of taking it on faith
+
 ### Data Management
 - **LocalStorage Persistence**: All data is automatically saved to browser storage
 - **Export Functionality**: Export all data as JSON for backup or migration
@@ -198,7 +206,6 @@ The application uses `localStorage` to persist data across sessions:
 - [ ] Email integration
 - [ ] Calendar integration for interviews
 - [ ] Resume parsing with AI
-- [ ] Automated candidate matching
 - [ ] Custom workflows and stages
 - [ ] Team collaboration features
 - [ ] Mobile app

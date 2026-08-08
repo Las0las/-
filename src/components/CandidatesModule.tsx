@@ -8,60 +8,8 @@ import {
   CalendarDays, UserCheck, FileCheck, Shield, AlertTriangle
 } from 'lucide-react';
 import { FocusedObject } from '../lawrence/objects';
-
-// Types & Interfaces
-interface Candidate {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  location: string;
-  title: string;
-  experience: number;
-  skills: string[];
-  status: 'new' | 'screening' | 'interviewing' | 'offer' | 'hired' | 'rejected' | 'archived';
-  rating: number;
-  resume?: string;
-  linkedin?: string;
-  notes: string;
-  createdAt: string;
-  updatedAt: string;
-  source: 'website' | 'referral' | 'linkedin' | 'indeed' | 'agency';
-  salary?: {
-    min: number;
-    max: number;
-    currency: string;
-  };
-  submittedJobs?: string[];
-  interviews?: string[];
-  employmentType?: 'w2' | '1099' | 'c2c' | 'flexible';
-  candidateSummary?: string;
-  availabilityToInterview?: string;
-  availabilityToStart?: string;
-}
-
-interface Job {
-  id: string;
-  title: string;
-  client: string;
-  department: string;
-  location: string;
-  type: 'full-time' | 'part-time' | 'contract';
-  status: 'open' | 'closed' | 'paused';
-  payRateRange: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Submission {
-  id: string;
-  candidateId: string;
-  jobId: string;
-  submittedAt: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'interview' | 'offer';
-  notes: string;
-}
+import { Candidate, Job, Submission } from '../lawrence/domain';
+import { rankJobsForCandidate, summarizePlan, RankedJobMatch } from '../lawrence/intelligence';
 
 // LocalStorage Keys
 const STORAGE_KEYS = {
@@ -397,48 +345,68 @@ const TableRow = memo(({
  * Project a candidate into the shell's focus model. The inspector renders
  * this; the composer attaches `contextItem` as a chip.
  */
-const candidateFocus = (candidate: Candidate): FocusedObject => ({
-  id: candidate.id,
-  kind: 'person',
-  title: `${candidate.firstName} ${candidate.lastName}`,
-  subtitle: candidate.title,
-  qualifier: `Candidate · ${candidate.status}`,
-  facts: [
-    { label: 'Location', value: candidate.location },
-    { label: 'Experience', value: `${candidate.experience} yrs` },
-    { label: 'Rating', value: `${candidate.rating}/5` },
-    { label: 'Source', value: candidate.source },
-    ...(candidate.employmentType
-      ? [{ label: 'Employment', value: candidate.employmentType.toUpperCase() }]
-      : []),
-    ...(candidate.salary
-      ? [{
-          label: 'Comp range',
-          value: `$${candidate.salary.min.toLocaleString()}–$${candidate.salary.max.toLocaleString()}`,
-          consequence: true,
-        }]
-      : []),
-    ...(candidate.availabilityToStart
-      ? [{ label: 'Available', value: candidate.availabilityToStart, consequence: true }]
-      : []),
-  ],
-  evidence: [
-    ...(candidate.candidateSummary
-      ? [{ label: 'Summary', value: candidate.candidateSummary }]
-      : []),
-    { label: 'Skills', value: candidate.skills.join(', ') },
-    { label: 'Contact', value: `${candidate.email} · ${candidate.phone}` },
-    { label: 'Last updated', value: new Date(candidate.updatedAt).toLocaleString() },
-  ],
-  contextItem: {
+const candidateFocus = (candidate: Candidate, jobs: Job[]): FocusedObject => {
+  const ranked = rankJobsForCandidate(candidate, jobs, 3);
+
+  return {
     id: candidate.id,
     kind: 'person',
-    label: 'Candidate',
-    value: `${candidate.firstName} ${candidate.lastName}`,
+    title: `${candidate.firstName} ${candidate.lastName}`,
+    subtitle: candidate.title,
     qualifier: `Candidate · ${candidate.status}`,
-    removable: true,
-  },
-});
+    facts: [
+      { label: 'Location', value: candidate.location },
+      { label: 'Experience', value: `${candidate.experience} yrs` },
+      { label: 'Rating', value: `${candidate.rating}/5` },
+      { label: 'Source', value: candidate.source },
+      ...(candidate.employmentType
+        ? [{ label: 'Employment', value: candidate.employmentType.toUpperCase() }]
+        : []),
+      ...(candidate.salary
+        ? [{
+            label: 'Comp range',
+            value: `$${candidate.salary.min.toLocaleString()}–$${candidate.salary.max.toLocaleString()}`,
+            consequence: true,
+          }]
+        : []),
+      ...(candidate.availabilityToStart
+        ? [{ label: 'Available', value: candidate.availabilityToStart, consequence: true }]
+        : []),
+      ...(ranked.length > 0
+        ? [{
+            label: 'Best-fit req',
+            value: `${ranked[0].match.score}% · ${ranked[0].job.title} (${ranked[0].job.client})`,
+            consequence: ranked[0].match.tier === 'strong',
+          }]
+        : []),
+    ],
+    evidence: [
+      ...(candidate.candidateSummary
+        ? [{ label: 'Summary', value: candidate.candidateSummary }]
+        : []),
+      { label: 'Skills', value: candidate.skills.join(', ') },
+      { label: 'Contact', value: `${candidate.email} · ${candidate.phone}` },
+      { label: 'Last updated', value: new Date(candidate.updatedAt).toLocaleString() },
+      ...(ranked.length > 0
+        ? [{
+            label: 'Match intelligence — top open reqs',
+            value: ranked
+              .map((entry) => `${entry.match.score}% ${entry.job.title} (${entry.job.client}) — ${entry.match.reasons[0]}`)
+              .join('\n'),
+          }]
+        : []),
+    ],
+    contextItem: {
+      id: candidate.id,
+      kind: 'person',
+      label: 'Candidate',
+      value: `${candidate.firstName} ${candidate.lastName}`,
+      qualifier: `Candidate · ${candidate.status}`,
+      removable: true,
+    },
+    quickPlan: ranked.length > 0 ? summarizePlan(ranked) : undefined,
+  };
+};
 
 interface CandidatesModuleProps {
   /** FOCUS — hand the selected object to the workbench inspector. */
@@ -852,7 +820,7 @@ const CandidatesModule: React.FC<CandidatesModuleProps> = ({ onFocus, focusedId 
                 selected={focusedId === candidate.id}
                 onFocus={() => {
                   setSelectedCandidate(candidate);
-                  onFocus?.(candidateFocus(candidate));
+                  onFocus?.(candidateFocus(candidate, jobs));
                 }}
                 onView={() => {
                   setSelectedCandidate(candidate);
@@ -954,7 +922,7 @@ const CandidatesModule: React.FC<CandidatesModuleProps> = ({ onFocus, focusedId 
                       key={candidate.id}
                       onClick={() => {
                         setSelectedCandidate(candidate);
-                        onFocus?.(candidateFocus(candidate));
+                        onFocus?.(candidateFocus(candidate, jobs));
                       }}
                       className={`rounded-lg p-4 cursor-pointer border transition-colors ${
                         focusedId === candidate.id
@@ -1079,6 +1047,15 @@ const CandidatesModule: React.FC<CandidatesModuleProps> = ({ onFocus, focusedId 
     const [submitJobId, setSubmitJobId] = useState('');
     const [submitNotes, setSubmitNotes] = useState('');
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    // Match intelligence — rank open reqs for the candidate being submitted
+    // so the recruiter picks from best-fit-first instead of an A-Z list.
+    const rankedJobs: RankedJobMatch[] = useMemo(
+      () => (selectedCandidate ? rankJobsForCandidate(selectedCandidate, jobs, jobs.length) : []),
+      [selectedCandidate, jobs],
+    );
+    const recommended = rankedJobs[0];
+    const selectedMatch = rankedJobs.find((entry) => entry.job.id === submitJobId);
 
     useEffect(() => {
       if (sidebarContent === 'editCandidate' && selectedCandidate) {
@@ -1377,22 +1354,59 @@ const CandidatesModule: React.FC<CandidatesModuleProps> = ({ onFocus, focusedId 
                 </div>
               )}
 
+              {recommended && (
+                <div className="rounded-lg border border-purple-500/40 bg-purple-500/10 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-purple-300 text-xs font-semibold uppercase tracking-wide">
+                        Recommended match · {recommended.match.score}% ({recommended.match.tier})
+                      </p>
+                      <p className="text-white font-medium mt-1">
+                        {recommended.job.title} · {recommended.job.client}
+                      </p>
+                      <p className="text-gray-400 text-xs mt-1">{recommended.match.reasons[0]}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSubmitJobId(recommended.job.id)}
+                      className="shrink-0 bg-purple-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-purple-700 transition-colors"
+                    >
+                      Use match
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <label className="block text-gray-300 mb-2">Select Job *</label>
+                <label className="block text-gray-300 mb-2">
+                  Select Job * <span className="text-gray-500 text-xs font-normal">(ranked by match score)</span>
+                </label>
                 <select
                   className="w-full bg-gray-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={submitJobId}
                   onChange={(e) => setSubmitJobId(e.target.value)}
                 >
                   <option value="">Choose a job...</option>
-                  {jobs.filter(j => j.status === 'open').map((job) => (
+                  {rankedJobs.map(({ job, match }) => (
                     <option key={job.id} value={job.id}>
-                      {job.title} - {job.client} ({job.type})
+                      {match.score}% match — {job.title} · {job.client} ({job.type})
                     </option>
                   ))}
                 </select>
                 {formErrors.submit && (
                   <p className="text-red-400 text-sm mt-1">{formErrors.submit}</p>
+                )}
+                {selectedMatch && (
+                  <div className="mt-2 rounded-lg border border-gray-700 bg-gray-800/60 p-3">
+                    <p className="text-white text-sm font-medium">
+                      {selectedMatch.match.score}% match — {selectedMatch.match.tier}
+                    </p>
+                    <ul className="mt-1.5 space-y-1">
+                      {selectedMatch.match.reasons.map((reason) => (
+                        <li key={reason} className="text-gray-400 text-xs">• {reason}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
 

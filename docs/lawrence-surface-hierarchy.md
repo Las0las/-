@@ -106,12 +106,36 @@ overlays and modals are reserved for bounded high-focus operations. Clicking a
 candidate's name focuses it in the inspector without losing the surrounding
 list; the eye action still opens the full profile drawer.
 
+## 6. Match intelligence
+
+Focusing a candidate scores them against every open requisition and surfaces
+the ranked result in two places, implemented in
+[`src/lawrence/intelligence.ts`](../src/lawrence/intelligence.ts):
+
+- **Inspector** — a `Best-fit req` fact plus a `Match intelligence` evidence
+  block listing the top 3 reqs, score, and the leading reason for each.
+- **Submit to Job** — the job picker is ranked best-fit-first instead of
+  alphabetical, a `Recommended match` callout offers the top req with a
+  one-click `Use match`, and selecting any req shows its full rationale
+  (skills, experience, engagement type, location, availability).
+
+The score is a weighted blend of inferred skill overlap, experience level,
+employment-type fit, location fit, and stated availability — the same
+signals a recruiter already checks by hand, just computed and shown before
+they ask. It replaces the "Automated candidate matching" line that has sat
+under the README's Future Enhancements since the mock data was seeded.
+
 ## Scope and limits
 
-- No model is wired to the composer in this build. Non-consequential modes
-  land in the activity log as `Queued`; `Act` stops at `Authorization
-  required` until explicitly authorised, and only then emits a receipt.
-  Nothing here fabricates an answer.
+- No generative model is wired to the composer in this build. Plan mode is
+  the one exception: with a candidate in focus, submitting in Plan mode
+  returns the candidate's ranked open-req matches immediately (see
+  [Match intelligence](#6-match-intelligence) below) — deterministic
+  scoring over data already on screen, not a model call. Every other
+  non-consequential submission still lands in the activity log as
+  `Queued`; `Act` stops at `Authorization required` until explicitly
+  authorised, and only then emits a receipt. Nothing here fabricates an
+  answer.
 - Seeded operating context (mission, job, account, evidence, file, rate floor)
   exists so the chip rules are exercised against real shapes, in the same
   spirit as the module's seeded candidates and jobs.

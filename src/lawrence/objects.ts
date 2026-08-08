@@ -18,6 +18,13 @@ export interface FocusedObject {
   evidence?: { label: string; value: string }[];
   /** The context chip this object contributes to the composer. */
   contextItem: ContextItem;
+  /**
+   * Precomputed Plan-mode answer for this object, e.g. ranked job matches for
+   * a focused candidate. When present, submitting in Plan mode returns it
+   * immediately instead of queuing — it's already been computed from the
+   * object's own data, not fabricated by a model.
+   */
+  quickPlan?: { summary: string; steps: string[] };
 }
 
 export type SessionState = 'queued' | 'awaiting-authorization' | 'executed' | 'declined';
